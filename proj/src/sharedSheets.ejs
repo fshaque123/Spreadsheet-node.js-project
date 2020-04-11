@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" charset="utf-8" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="styles.css">
+    <h1> Shared Sheets</h1>
+ 
+
+  </head>
+  <body >
+
+    <div class="topnav">
+
+  
+      <a href="/profile">My Profile</a>
+      <a href="/admin">Admin</a>
+      <a href="/mySheets">My Spreadsheets</a>
+      <a href="/editSheets">Edit Speadsheets</a>
+      <a href="/sharedSheets">Shared sheets</a>
+      <a href="/charts">Charts</a>
+
+    </div>
+
+    <div>
+        <table class="mySheetList">
+            <tr>
+                <th>Sheet's name</th>
+                <th>Creator</th>
+                <th>Copy</th>
+              
+              </tr>
+      
+              <% mySheetList.forEach(function(mySheet) { %>
+                  <tr>
+                    <td><%= mySheet.name%></td>
+                    <td><%= mySheet.creator%></td>
+                    <td> <button type="button" name="CopyButton">Copy</button> </td>
+                  
+                    
+          
+                  </tr>
+              <% }); %>
+  
+         </table>
+      
+
+
+    </div>
+
+ 
+      
+
+    <script>
+
+
+
+
+
+      </script>
+  </body>
+</html>

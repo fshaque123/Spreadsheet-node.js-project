@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <title>Profile</title>
+  </head>
+  <body>
+
+    <div class="topnav">
+      <a href="/profile">My Profile</a>
+      <a href="/admin">Admin</a>
+      <a href="/mySheets">My Spreadsheets</a>
+      <a href="/editSheets">Edit Spreadsheets</a>
+      <a href="/sharedSheets">Shared sheets</a>
+      <a href="/charts">Charts</a>
+    </div>
+
+
+    <h1 style="border-style:solid;">Signed in, <%= user %> </h1>
+
+    <h2>Change your password</h2>
+    <form class="login"  action="profile" method="POST">
+
+      <label>Enter a <i>new</i> password: </label>
+      <input type="password" name="password" placeholder="password">
+      <br><br>
+      <label>Re-enter the <i>new</i> password: </label>
+      <input type="password" name="password_verify" placeholder="password">
+      <br><br>
+      <input type="submit" name="submit" value="submit">
+    </form>
+
+  </body>
+</html>

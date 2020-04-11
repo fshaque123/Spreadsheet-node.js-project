@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" charset="utf-8" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="styles.css">
+    <script src="Chart.bundle.min.js"></script>
+
+    <script>
+        
+        const requestParams = {
+             mode: 'cors',
+             credentials: 'same-origin',
+             headers : {
+                 'Accept' : 'application/json',
+                 'Content-Type' : 'application/json',
+             },
+        };
+
+        function makeSpreadSheet( n, m ) {
+            const sheet = document.createElement('div');
+            sheet.setAttribute('class', 'sheet');
+            for( let j = 0 ; j < m ; j++ ) {
+                const row = document.createElement('div');
+                row.setAttribute('class', 'row');
+                for( let i = 0; i < n; i++ ) {
+                    const inp = document.createElement('input');
+                    row.append( inp );
+                }
+                sheet.append( row );
+            }
+            return sheet;
+        }
+    
+
+        function getSheetInputs( element ) {
+            const ssRow = Array.from(element.querySelectorAll('div.row'));
+            const sheet = ssRow.map( (r) => {
+                return Array.from(r.querySelectorAll('input'));
+            });
+            return sheet;
+        }
+
+        function getValues( sheetInputs ) {
+            return sheetInputs.map( (r) => r.map( (c) => c.value ));
+        }
+    
+
+        function setValues( sheetInputs, values ) {
+            for( let i=0 ; i < sheetInputs.length; i++ ) {
+                const row = sheetInputs[i];
+                for( let j=0; j < row.length; j++ ) {
+                    row[j].value = values[i][j]; 
+                }
+            }
+        }
+    </script>
+
+    <div class="topnav">
+
+        <a href="/profile">My Profile</a>
+        <a href="/admin">Admin</a>
+        <a href="/mySheets">My Spreadsheets</a>
+        <a href="/editSheets">Edit Speadsheets</a>
+        <a href="/sharedSheets">Shared sheets</a>
+        <a href="/charts">Charts</a>
+    </div>
+    </head>
+
+
+    <body>
+
+
+       
+    <div id="sheet-choice"></div>
+    <p id="sheet-text">Click on a sheet to see its Scatter Chart</p>
+    <div id="plotting-box">
+        <canvas id="myplot"></canvas>
+    </div>
+
+    <div id="line-choice"></div>
+    <p id="sheet-text">Click on a sheet to see its Line Chart</p>
+    <div id="line-box">
+        <canvas id="linePlot"></canvas>
+    </div>  
+    
+    <div id="pie-choice"></div>
+    <p id="sheet-text">Click on a sheet to see its Pie Chart</p>
+    <div id="pie-box">
+        <canvas id="piePlot"></canvas>
+    </div> 
+    
+   
+</div>
+
+<script>
+let ctx = document.getElementById('myplot').getContext('2d');
+let scatterChart = new Chart(ctx, {
+    type: 'scatter',
+    data: { datasets: [] },
+    options: {}
+});
+
+
+const sheetChoice = document.querySelector('#sheet-choice');
+const lineChoice= document.querySelector('#line-choice');
+const pieChoice= document.querySelector('#pie-choice');
+
+async function loadSheetChoice(SC) {
+    const container = SC;
+    const params = {...requestParams, method: 'GET' };
+    const resp = await fetch( '/sheet-list', params );
+    const json = await resp.json();
+    container.innerHTML = '';
+    container.append( ...json.map( (x) => {
+        const button = document.createElement('button');
+        button.textContent = x;
+        button.style.width="100px";
+        button.style.height="50px";
+        return button;
+    } ));
+    console.log( json );
+}
+loadSheetChoice(sheetChoice);
+
+sheetChoice.addEventListener('click', async (evt) => {
+    const { target } = evt;
+    if ( target.nodeName !== 'BUTTON' ) return;
+    const name = target.textContent;
+
+    const params = {...requestParams, method: 'GET' };
+    const resp = await fetch(` /sheet/${name}`, params );
+    const values = await resp.json();
+    console.log( values );
+
+    const datasetNames = values.shift();
+    const indexName = datasetNames.shift();
+    
+    const colours = ['red','green','blue','black','brown',];
+    let colourIndex = 0;
+
+
+    const datasets = [];
+    for( let i = 0; i < datasetNames.length; i++ ) {
+        const pairs = [];
+        for( let row = 0; row < values.length; row++ ) {
+            pairs.push({ x: values[row][0], y:values[row][i+1] });
+        }
+        const dataset = {
+            label: datasetNames[i],
+            data: pairs,
+            pointBackgroundColor : colours[colourIndex],
+            borderColor : colours[colourIndex],
+            showLine : true,
+            fill: false,
+            lineTension : 0,
+        }
+        datasets.push( dataset );
+        colourIndex = colourIndex >= colours.length ? 0 : colourIndex+1;
+    }
+    scatterChart.data.datasets = datasets;
+    scatterChart.update();
+});
+
+
+loadSheetChoice(lineChoice);
+let line = document.getElementById('linePlot').getContext('2d');
+let lineChart = new Chart(line, {
+    type: 'line',
+    data: { datasets: [] },
+    options: {}
+});
+
+lineChoice.addEventListener('click', async (evt) => {
+    const { target } = evt;
+    if ( target.nodeName !== 'BUTTON' ) return;
+    const name = target.textContent;
+
+    const params = {...requestParams, method: 'GET' };
+    const resp = await fetch( `/sheet/${name}`, params );
+    const values = await resp.json();
+    console.log( values );
+
+    const datasetNames = values.shift();
+    const indexName = datasetNames.shift();
+    
+    const colours = ['red','green','blue','black','brown','grey'];
+    let colourIndex = 0;
+
+    const datasets = [];
+    for( let i = 0; i < datasetNames.length; i++ ) {
+        const pairs = [];
+        for( let row = 0; row < values.length; row++ ) {
+            pairs.push({ x: values[row][0], y:values[row][i+1] });
+        }
+        console.log(pairs);
+        const dataset = {
+            label: datasetNames[i],
+            data: pairs,
+            pointBackgroundColor : colours[colourIndex],
+            borderColor : colours[colourIndex],
+            showLine : true,
+            fill: false,
+            lineTension : 0,
+            
+           
+        }
+        datasets.push( dataset );
+        console.log(datasets);
+        colourIndex = colourIndex >= colours.length ? 0 : colourIndex+1;
+    }
+    lineChart.data.datasets = datasets;
+    lineChart.update();
+});
+
+
+
+loadSheetChoice(pieChoice);
+let pie = document.getElementById('piePlot').getContext('2d');
+let pieChart = new Chart(pie, {
+    type: 'pie',
+    data: { datasets: [] },
+    options: {}
+});
+
+pieChoice.addEventListener('click', async (evt) => {
+    const { target } = evt;
+    if ( target.nodeName !== 'BUTTON' ) return;
+    const name = target.textContent;
+ 
+    const params = {...requestParams, method: 'GET' };
+    const resp = await fetch( `/sheet/${name}`, params );
+    const values = await resp.json();
+    console.log( values );
+
+    const datasetNames = values.shift();
+    const indexName = datasetNames.shift();
+    
+    const colours = ['red','green','blue','black','brown',];
+    let colourIndex = 0;
+
+    const datasets = [];
+    
+    for( let i = 0; i < datasetNames.length; i++ ) {
+        const pairs = [];
+        for( let row = 0; row < values.length; row++ ) {
+            pairs.push(values[row][0]);
+        }
+        const dataset = {
+            label: datasetNames[i],
+            data: pairs,
+            backgroundColor : colours[colourIndex],
+            
+
+            
+        }
+        datasets.push( dataset );
+        colourIndex = colourIndex >= colours.length ? 0 : colourIndex+1;
+    }
+    pieChart.data.datasets = datasets;
+    pieChart.update();
+});
+
+
+</script>
+
+    </body>
+
+    </html>
